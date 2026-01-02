@@ -3,15 +3,18 @@ import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import UseAuth from "../../../Hooks/UseAuth";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 
 const MyParcels = () => {
-  const { user, loading } = UseAuth(); // ✅ loading added
+  const { user, loading } = UseAuth();
   const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
+
   const [searchTerm, setSearchTerm] = useState("");
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedParcel, setSelectedParcel] = useState(null);
 
   const {
     data: parcels = [],
@@ -20,27 +23,23 @@ const MyParcels = () => {
     refetch,
   } = useQuery({
     queryKey: ["my-parcels", user?.email],
-    enabled: !loading && !!user?.email, // ✅ VERY IMPORTANT
+    enabled: !loading && !!user?.email,
     queryFn: async () => {
       const res = await axiosSecure.get(
         `/parcels?email=${encodeURIComponent(user.email)}`
       );
       return res.data;
     },
-    staleTime: 1000 * 60, // 1 minute cache
   });
 
-  // 🔄 Auth loading
   if (loading) {
     return <div className="text-center mt-10">Checking user...</div>;
   }
 
-  // 🔄 Data loading
   if (isLoading) {
     return <div className="text-center mt-10">Loading parcels...</div>;
   }
 
-  // ❌ Error state
   if (error) {
     return (
       <div className="text-center mt-10 text-red-500">
@@ -84,7 +83,11 @@ const MyParcels = () => {
     toast.success("Redirecting to payment...");
     navigate(`/dashboard/payment/${id}`);
   };
-
+  const modalTotalAmount =
+    selectedParcel?.breakdown?.reduce(
+      (sum, item) => sum + Number(item.amount || 0),
+      0
+    ) || 0;
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">
@@ -158,12 +161,15 @@ const MyParcels = () => {
                   </p>
 
                   <div className="flex md:justify-end gap-2 mt-3 flex-wrap">
-                    <Link
-                      to={`/parcel/${parcel._id}`}
+                    <button
                       className="btn btn-sm btn-info text-white"
+                      onClick={() => {
+                        setSelectedParcel(parcel);
+                        setOpenModal(true);
+                      }}
                     >
                       View
-                    </Link>
+                    </button>
 
                     {parcel.payload_status === "unpaid" && (
                       <button
@@ -187,6 +193,72 @@ const MyParcels = () => {
           );
         })}
       </div>
+
+      {/* ================= Parcel View Modal (ONE GLOBAL MODAL) ================= */}
+      {openModal && selectedParcel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-3">
+          <div className="bg-white w-full max-w-xl rounded-lg p-5 relative overflow-scroll">
+            <h2 className="text-xl text-center font-semibold mb-4 text-green-500">
+              Parcel Details
+            </h2>
+
+            <div className=" md:flex  justify-center space-y-2 text-black text-sm md:text-lg lg:text-xl">
+              <div>
+                <p>
+                  <b>Parcel Name:</b> {selectedParcel.parcelName}
+                </p>
+                <p>
+                  <b>Type:</b> {selectedParcel.type}
+                </p>
+                <p>
+                  <b>Weight:</b> {selectedParcel.weight}
+                </p>
+                <p>
+                  <b>Sender:</b> {selectedParcel.sender_name}
+                </p>
+                <p>
+                  <b>Sender Contact:</b> {selectedParcel.sender_contact}
+                </p>
+                <p>
+                  <b>Receiver:</b> {selectedParcel.receiver_name}
+                </p>
+                <p>
+                  <b>Receiver Contact:</b> {selectedParcel.receiver_contact}
+                </p>
+              </div>
+              <div>
+                <p>
+                  <b>Pickup District:</b> {selectedParcel.pickup_district}
+                </p>
+                <p>
+                  <b>Delivery District:</b> {selectedParcel.delivery_district}
+                </p>
+                <p>
+                  <b>Delivery Address:</b> {selectedParcel.delivery_address}
+                </p>
+                <p>
+                  <b>Status:</b> {selectedParcel.delivery_status}
+                </p>
+                <p>
+                  <b>Payment:</b> {selectedParcel.payload_status}
+                </p>
+                <p className="text-lg font-bold text-black">
+                  Total Amount: ৳{modalTotalAmount}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 text-right">
+              <button
+                onClick={() => setOpenModal(false)}
+                className="btn btn-sm btn-neutral"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

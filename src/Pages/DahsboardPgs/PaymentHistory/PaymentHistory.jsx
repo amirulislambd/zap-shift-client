@@ -69,7 +69,7 @@ const PaymentHistory = () => {
               <th className="border py-2 px-3">Email</th>
               <th className="border py-2 px-3">Transaction ID</th>
               <th className="border py-2 px-3">Amount</th>
-              
+
               <th className="border py-2 px-3">Actions</th>
             </tr>
           </thead>
@@ -80,7 +80,7 @@ const PaymentHistory = () => {
                 <td className="border px-3 py-1">{p.user_email}</td>
                 <td className="border px-3 py-1">{p.paymentIntentId}</td>
                 <td className="border px-3 py-1">{p.amount}</td>
-                
+
                 <td className="border px-3 py-1 flex gap-2 justify-center">
                   <button
                     className="btn btn-sm btn-info text-white p-1"
@@ -152,7 +152,7 @@ const PaymentHistory = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 text-black">
           <div className="bg-white p-6 rounded-lg max-w-md w-full relative">
             <button
-              className="absolute top-2 right-2 btn btn-ghost"
+              className="absolute bottom-2 right-2 btn btn-ghost"
               onClick={() => setSelectedPayment(null)}
             >
               ✖
@@ -162,13 +162,14 @@ const PaymentHistory = () => {
             </h3>
             <div className="space-y-2 text-sm">
               <p>
-                <span className="font-semibold">Email:</span>{" "}
-                {selectedPayment.user_email}
+                <span className="font-semibold">Name:</span>{" "}
+                {selectedPayment.sender_name}
               </p>
               <p>
                 <span className="font-semibold">Email:</span>{" "}
                 {selectedPayment.user_email}
               </p>
+
               <p>
                 <span className="font-semibold">Transaction ID:</span>{" "}
                 {selectedPayment.paymentIntentId}
@@ -193,7 +194,6 @@ const PaymentHistory = () => {
                 <span className="font-semibold">Date:</span>{" "}
                 {new Date(selectedPayment.createdAt).toLocaleString()}
               </p>
-              
             </div>
           </div>
         </div>

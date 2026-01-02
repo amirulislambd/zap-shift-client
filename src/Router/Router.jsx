@@ -20,6 +20,12 @@ import MakeAdmin from "../Pages/DahsboardPgs/MakeAdmin/MakeAdmin";
 import Forbidden from "../Pages/Forbidden/Forbidden";
 import AdminRoute from "../Routes/AdminRoute";
 import AssignRider from "../Pages/DahsboardPgs/AssignRider/AssignRider";
+import RiderRoute from "../Routes/RiderRoute";
+import PendingDeliveries from "../Pages/DahsboardPgs/PendingDeliveries/PendingDeliveries";
+import CompletedDelivery from "../Pages/DahsboardPgs/CompletedDelivery/CompletedDelivery";
+import MyEarnings from "../Pages/DahsboardPgs/MyEarnings/MyEarnings";
+import DashboardHome from "../Pages/DahsboardPgs/DashboardHome/DashboardHome";
+import Profile from "../Pages/DahsboardPgs/Profile/Profile";
 
 export const router = createBrowserRouter([
   // -----------------------
@@ -93,6 +99,10 @@ export const router = createBrowserRouter([
     ),
     children: [
       {
+        index: true,
+        element:<DashboardHome/>
+      },
+      {
         path: "myParcels",
         element: <MyParcels />,
       },
@@ -108,6 +118,33 @@ export const router = createBrowserRouter([
         path: "track",
         element: <TrackParcel />,
       },
+      // rider only routs
+      {
+        path: "pendingDeliveries",
+        element: (
+          <RiderRoute>
+            <PendingDeliveries />
+          </RiderRoute>
+        ),
+      },
+      {
+        path: "completedDeliveries",
+        element: (
+          <RiderRoute>
+            <CompletedDelivery />
+          </RiderRoute>
+        ),
+      },
+      {
+        path: "myEarnings",
+        element: (
+          <RiderRoute>
+            <MyEarnings />
+          </RiderRoute>
+        ),
+      },
+
+      //admin only routers
       {
         path: "assignRider",
         element: (
@@ -148,6 +185,10 @@ export const router = createBrowserRouter([
           </AdminRoute>
         ),
       },
+      {
+        path: 'profile',
+        element: <Profile/>
+      }
     ],
   },
 ]);

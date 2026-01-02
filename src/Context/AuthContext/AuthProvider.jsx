@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { auth } from "../../Firebase/firebase.init";
 import { AuthContext } from "./AuthContext";
 import {
-  getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   onAuthStateChanged,
@@ -64,7 +63,7 @@ const AuthProvider = ({ children }) => {
     logOut,
   };
 
-  return <AuthContext value={authIfo}>{children}</AuthContext>;
+  return <AuthContext.Provider value={authIfo}>{children}</AuthContext.Provider>;
 };
 
 export default AuthProvider;

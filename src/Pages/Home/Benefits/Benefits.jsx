@@ -3,31 +3,36 @@ import BenefitsData from './BenefitsData'; // adjust path as needed
 
 const Benefits = () => {
   return (
-    <section className="  px-4 py-12">
-      <h2 className="text-3xl font-bold text-center mb-10">Our Benefits</h2>
+    <section className="px-4 sm:px-6 lg:px-12 py-12 bg-gray-50">
+      {/* Section Title */}
+      <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-900 mb-12">
+        Our Benefits
+      </h2>
 
+      {/* Benefits Cards */}
       <div className="flex flex-col gap-6">
         {BenefitsData.map((item) => (
           <div
             key={item.id}
-            className="card bg-white shadow-lg p-5 flex flex-row items-center hover:shadow-2xl transition"
+            className="bg-white rounded-2xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1 p-6 flex flex-col sm:flex-row items-center sm:items-start gap-6"
           >
-            {/* Left Image */}
-            <figure className="w-24 h-24 flex items-center justify-center">
+            {/* Image */}
+            <div className="w-20 h-20 flex-shrink-0 flex items-center justify-center">
               <img
                 src={item.image}
                 alt={item.title}
-                className="w-14 h-14 object-contain"
+                className="w-16 h-16 object-contain"
               />
-            </figure>
+            </div>
 
-            {/* Vertical Divider */}
-            <div className="divider divider-horizontal mx-4"></div>
-
-            {/* Right Content */}
-            <div className="card-body p-0">
-              <h3 className="card-title text-lg text-primary">{item.title}</h3>
-              <p className="text-sm text-gray-600">{item.description}</p>
+            {/* Text */}
+            <div className="flex-1 text-center sm:text-left">
+              <h3 className="text-xl font-semibold text-primary mb-2">
+                {item.title}
+              </h3>
+              <p className="text-gray-600 text-sm sm:text-base">
+                {item.description}
+              </p>
             </div>
           </div>
         ))}

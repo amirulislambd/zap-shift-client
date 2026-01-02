@@ -81,7 +81,7 @@ const AssignRider = () => {
         });
 
         setModalOpen(false);
-        refetch();
+        queryClient.invalidateQueries(["assign-rider-parcels"]);
       }
     } catch (err) {
       Swal.fire({
@@ -106,7 +106,7 @@ const AssignRider = () => {
         <table className="table-auto w-full min-w-[700px] border-collapse">
           <thead className="bg-gray-300 text-black">
             <tr>
-              <th className="px-4 py-2 text-center">#</th>
+              <th className="px-4 py-2 text-center">NO</th>
               <th className="px-4 py-2 text-left">Parcel</th>
               <th className="px-4 py-2 text-left">Sender</th>
               <th className="px-4 py-2 text-left">Receiver</th>
@@ -137,7 +137,7 @@ const AssignRider = () => {
                 </td>
                 <td className="px-4 py-3 text-center">
                   <button
-                    className="btn btn-sm btn-primary flex items-center gap-2 text-white justify-center"
+                    className="btn btn-sm btn-primary flex items-center gap-2 text-black justify-center"
                     onClick={() => handleOpenModal(parcel)}
                   >
                     <MdTwoWheeler aria-hidden="true" /> Assign
@@ -180,7 +180,7 @@ const AssignRider = () => {
               {parcel.delivery_status}
             </p>
             <button
-              className="btn btn-sm btn-primary mt-2 flex items-center gap-2"
+              className="btn btn-sm btn-primary mt-2 flex text-black items-center gap-2"
               onClick={() => handleOpenModal(parcel)}
             >
               <MdTwoWheeler aria-hidden="true" /> Assign Rider

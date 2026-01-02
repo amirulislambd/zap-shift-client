@@ -6,14 +6,14 @@ import { MdVisibility, MdDelete } from "react-icons/md";
 
 const PendingRiders = () => {
   const axiosSecure = useAxiosSecure();
+  const queryClient = useQueryClient();
   const [selectedRider, setSelectedRider] = useState(null);
   const [searchLicense, setSearchLicense] = useState("");
-const queryClient = useQueryClient();
+
   // ================= FETCH =================
-  const { data: riders = [], refetch } = useQuery({
+  const { data: riders = [] } = useQuery({
     queryKey: ["pendingRiders"],
     queryFn: async () => {
-      
       const res = await axiosSecure.get("/api/riders/pending");
       return res.data;
     },
@@ -36,7 +36,7 @@ const queryClient = useQueryClient();
 
     if (res.isConfirmed) {
       await axiosSecure.delete(`/api/riders/${id}`);
-      refetch();
+      queryClient.invalidateQueries(["pendingRiders"]);
       Swal.fire({
         icon: "success",
         title: "Deleted",
@@ -46,41 +46,47 @@ const queryClient = useQueryClient();
     }
   };
 
-// Accept a rider
- const handleAccept = async (id) => {
-  await axiosSecure.patch(`/api/riders/${id}`, {
-    status: "active",
-    role: "rider",
-  });
-  queryClient.invalidateQueries(["pendingRiders"]);
+  // Accept a rider
+const handleAccept = async (id) => {
+  try {
+    await axiosSecure.patch(`/api/riders/approve/${id}`);
 
-  setSelectedRider(null);
+    queryClient.invalidateQueries(["pendingRiders"]);
+    setSelectedRider(null);
 
-  Swal.fire({
-    icon: "success",
-    title: "Rider Activated as Writer",
-    timer: 1400,
-    showConfirmButton: false,
-  });
+    await Swal.fire({
+      icon: "success",
+      title: "Rider Activated",
+      timer: 1400,
+      showConfirmButton: false,
+    });
+  } catch (err) {
+    console.error(err);
+    Swal.fire("Error", "Failed to activate rider", "error");
+  }
 };
-
 
   // Reject a rider
-const handleReject = async (id) => {
-  await axiosSecure.patch(`/api/riders/${id}`, {
-    status: "rejected",
-    role: "rejected rider",   
-  });
-  refetch();
-  setSelectedRider(null);
+  const handleReject = async (id) => {
+    try {
+      await axiosSecure.patch(`/api/riders/${id}`, {
+        status: "rejected",
+      });
 
-  Swal.fire({
-    icon: "info",
-    title: "Rider Rejected",
-    timer: 1400,
-    showConfirmButton: false,
-  });
-};
+      queryClient.invalidateQueries(["pendingRiders"]);
+      setSelectedRider(null);
+
+      await Swal.fire({
+        icon: "info",
+        title: "Rider Rejected",
+        timer: 1400,
+        showConfirmButton: false,
+      });
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Error", "Failed to reject rider", "error");
+    }
+  };
 
   return (
     <div className="p-3 sm:p-5">
@@ -95,7 +101,7 @@ const handleReject = async (id) => {
         className="input input-bordered w-full sm:max-w-xs mb-4"
       />
 
-      {/* ================= MOBILE (CARD) ================= */}
+      {/* MOBILE */}
       <div className="grid gap-4 md:hidden">
         {filteredRiders.map((rider) => (
           <div
@@ -118,7 +124,7 @@ const handleReject = async (id) => {
                 : "-"}
             </p>
 
-            <div className="flex justify-end gap-3 pt-2">
+            <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setSelectedRider(rider)}
                 className="btn btn-sm btn-info"
@@ -136,51 +142,8 @@ const handleReject = async (id) => {
         ))}
       </div>
 
-      {/* ================= TABLET ================= */}
-      <div className="hidden md:block lg:hidden overflow-x-auto">
-        <table className="table table-zebra w-full text-sm">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>License</th>
-              <th>District</th>
-              <th>Applied</th>
-              <th className="text-center">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredRiders.map((rider) => (
-              <tr key={rider._id}>
-                <td>{rider.name}</td>
-                <td>{rider.bikeInfo?.license}</td>
-                <td>{rider.district}</td>
-                <td>
-                  {rider.appliedAt
-                    ? new Date(rider.appliedAt).toLocaleDateString()
-                    : "-"}
-                </td>
-                <td className="flex justify-center gap-2">
-                  <button
-                    onClick={() => setSelectedRider(rider)}
-                    className="btn btn-xs btn-info"
-                  >
-                    <MdVisibility />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(rider._id)}
-                    className="btn btn-xs btn-error"
-                  >
-                    <MdDelete />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* ================= DESKTOP ================= */}
-      <div className="hidden lg:block overflow-x-auto">
+      {/* TABLET & DESKTOP */}
+      <div className="overflow-x-auto hidden md:block">
         <table className="table table-zebra w-full">
           <thead>
             <tr>
@@ -224,9 +187,9 @@ const handleReject = async (id) => {
         </table>
       </div>
 
-      {/* ================= MODAL ================= */}
+      {/* MODAL */}
       {selectedRider && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-3 ">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-3">
           <div className="bg-white w-full max-w-md rounded-xl p-5 overflow-y-auto max-h-[90vh]">
             {selectedRider.photoURL && (
               <img
@@ -240,7 +203,7 @@ const handleReject = async (id) => {
               Rider Details
             </h3>
 
-            <div className="text-sm space-y-1 text-black md:flex gap-2 ">
+            <div className="text-sm space-y-1 text-black md:flex gap-2">
               <div>
                 <p>
                   <b>Name:</b> {selectedRider.name}
@@ -257,7 +220,6 @@ const handleReject = async (id) => {
                 <p>
                   <b>License:</b> {selectedRider.bikeInfo?.license}
                 </p>
-
                 <p>
                   <b>Applied:</b>{" "}
                   {selectedRider.appliedAt

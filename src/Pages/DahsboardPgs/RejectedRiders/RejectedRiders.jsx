@@ -68,8 +68,7 @@ const RejectedRiders = () => {
 
   if (result.isConfirmed) {
     await axiosSecure.patch(`/api/riders/${id}`, {
-      status: "pending",
-      role: "pending rider", 
+      status: "pending", 
     });
 
     queryClient.invalidateQueries(["rejectedRiders"]);

@@ -72,6 +72,9 @@ const BeARider = () => {
       setLoading(false);
     }
   };
+  if(loading||!user) return(
+    <p className="text-center">Loading...</p>
+  )
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-base-100 rounded-xl shadow">
@@ -82,7 +85,7 @@ const BeARider = () => {
           <label className="label">Name</label>
           <input
             type="text"
-            value={user?.displayName || ""}
+            defaultValue={user?.displayName || ""}
             readOnly
             className="input input-bordered w-full bg-gray-100 text-black"
           />
@@ -104,6 +107,7 @@ const BeARider = () => {
             type="number"
             name="age"
             min={18}
+            max={50}
             required
             placeholder="Enter your age"
             className="input input-bordered w-full"

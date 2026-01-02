@@ -1,82 +1,172 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import axios from "axios";
+import {
+  FaBox,
+  FaMoneyCheckAlt,
+  FaUserCheck,
+  FaTruck,
+  FaCheckCircle,
+} from "react-icons/fa";
 
+const statusConfig = {
+  submitted: {
+    label: "Parcel Submitted",
+    icon: <FaBox className="text-blue-500" />,
+  },
+  paid: {
+    label: "Payment Completed",
+    icon: <FaMoneyCheckAlt className="text-green-500" />,
+  },
+  "rider-assigned": {
+    label: "Rider Assigned",
+    icon: <FaUserCheck className="text-indigo-500" />,
+  },
+  "picked-up": {
+    label: "Parcel Picked Up",
+    icon: <FaTruck className="text-yellow-500" />,
+  },
+  delivered: {
+    label: "Parcel Delivered",
+    icon: <FaCheckCircle className="text-emerald-600" />,
+  },
+};
 
 const TrackParcel = () => {
-  const { trackingId: paramId } = useParams();
-  const axiosSecure = useAxiosSecure();
+  const { trackingId: paramTrackingId } = useParams();
 
-  const [trackingId, setTrackingId] = useState(paramId || "");
+  const [trackingId, setTrackingId] = useState(paramTrackingId || "");
   const [trackingData, setTrackingData] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (trackingId) fetchTracking(trackingId);
-  }, [trackingId]);
+    if (paramTrackingId) {
+      fetchTracking(paramTrackingId);
+    }
+  }, [paramTrackingId]);
 
   const fetchTracking = async (id) => {
     try {
-      const res = await axiosSecure.get(`/tracking/${id}`);
-      setTrackingData(res.data);
+      setLoading(true);
       setError("");
+
+      const res = await axios.get(
+        `https://zap-shift-server-a7ys5bt86-mdamirulislam313s-projects.vercel.app/tracking/${id}`
+      );
+
+      setTrackingData(res.data);
     } catch (err) {
-      console.error(err);
       setTrackingData(null);
       setError("Tracking ID not found");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (trackingId) fetchTracking(trackingId);
+    if (trackingId.trim()) {
+      fetchTracking(trackingId.trim());
+    }
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-4 ">
-      <h2 className="text-2xl font-semibold mb-4">Track Your Parcel</h2>
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <h2 className="text-3xl font-bold mb-6 text-center">
+        Track Your Parcel
+      </h2>
 
-      <form onSubmit={handleSubmit} className="mb-6 flex gap-2">
+      {/* Input Form */}
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col sm:flex-row gap-3 mb-6"
+      >
         <input
           type="text"
           value={trackingId}
           onChange={(e) => setTrackingId(e.target.value)}
           placeholder="Enter Tracking ID"
-          className="input input-bordered flex-1"
+          className="input input-bordered w-full"
         />
-        <button type="submit" className="btn btn-primary text-black">
-          Track
+        <button className="btn btn-primary text-black">
+          Track Parcel
         </button>
       </form>
 
-      {error && <p className="text-red-500">{error}</p>}
+      {/* Loading */}
+      {loading && (
+        <p className="text-center text-gray-500">
+          Fetching tracking information...
+        </p>
+      )}
 
+      {/* Error */}
+      {error && (
+        <p className="text-center text-red-500 font-medium">
+          {error}
+        </p>
+      )}
+
+      {/* Tracking Result */}
       {trackingData && (
-        <div className="space-y-4">
-          <p>
-            <span className="font-semibold">Parcel ID:</span>{" "}
-            {trackingData.parcelId}
+        <div className="mt-8">
+          <p className="mb-4">
+            <span className="font-semibold">Tracking ID:</span>{" "}
+            {trackingData.trackingId}
           </p>
 
-          <div className="space-y-2">
-            {trackingData.updates.map((u, idx) => (
-              <div
-                key={idx}
-                className="p-3 border rounded-lg  shadow-sm"
-              >
-                <p>
-                  <span className="font-semibold">Status:</span> {u.status}
-                </p>
-                <p>
-                  <span className="font-semibold">Location:</span>{" "}
-                  {u.location || "N/A"}
-                </p>
-                <p>
-                  <span className="font-semibold">Date:</span>{" "}
-                  {new Date(u.date).toLocaleString()}
-                </p>
-              </div>
-            ))}
+          <div className="space-y-4">
+            {trackingData.updates.map((update, index) => {
+              const config =
+                statusConfig[update.status] || {};
+
+              return (
+                <div
+                  key={index}
+                  className="flex items-start gap-4 p-4 border rounded-lg shadow-sm bg-base-100"
+                >
+                  <div className="text-2xl mt-1">
+                    {config.icon || <FaBox />}
+                  </div>
+
+                  <div className="flex-1">
+                    <p className="font-semibold">
+                      {config.label || update.status}
+                    </p>
+
+                    <p className="text-sm ">
+                      {new Date(update.date).toLocaleString()}
+                    </p>
+
+                    {update.name && (
+                      <p className="text-sm">
+                        <span className="font-medium">
+                          Updated by:
+                        </span>{" "}
+                        {update.name} ({update.email})
+                      </p>
+                    )}
+
+                    {update.location && (
+                      <p className="text-sm">
+                        <span className="font-medium">
+                          Location:
+                        </span>{" "}
+                        {update.location.district},{" "}
+                        {update.location.area}
+                      </p>
+                    )}
+
+                    {update.note && (
+                      <p className="text-sm italic ">
+                        {update.note}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

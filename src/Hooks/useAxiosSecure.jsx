@@ -1,42 +1,42 @@
+// useAxiosSecure.jsx
 import axios from "axios";
-import React from "react";
-import UseAuth from "./UseAuth";
-import { useNavigate } from "react-router";
-
-const axiosSecure = axios.create({
-  baseURL: `http://localhost:5000/`,
-});
+import useAuth from "./UseAuth";
+import { useNavigate } from "react-router-dom";
 
 const useAxiosSecure = () => {
-  const { user, logOut } = UseAuth();
+  const { user, logOut } = useAuth();
   const navigate = useNavigate();
+
+  const axiosSecure = axios.create({
+    baseURL: "https://zap-shift-server-sigma-two.vercel.app/",
+  });
+
+  // request interceptor: attach token
   axiosSecure.interceptors.request.use(
-    (config) => {
-      config.headers.Authorization = `Bearer ${user.accessToken}`;
+    async (config) => {
+      if (user) {
+        const token = await user.getIdToken();
+        config.headers.Authorization = `Bearer ${token}`;
+      }
       return config;
     },
-    (error) => {
-      return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
   );
 
-  axiosSecure.interceptors.response.use((res) => {
-    return res;
-  }),
-    (error) => {
-      console.log("inside res interceptor", error.status);
-      const status = error.status;
+  // response interceptor: handle 401 / 403
+  axiosSecure.interceptors.response.use(
+    (res) => res,
+    async (error) => {
+      const status = error.response?.status;
       if (status === 403) {
         navigate("/forbidden");
       } else if (status === 401) {
-        logOut()
-          .then(() => {
-            navigate("login");
-          })
-          .then(() => {});
+        await logOut();
+        navigate("/login");
       }
       return Promise.reject(error);
-    };
+    }
+  );
 
   return axiosSecure;
 };
