@@ -1,6 +1,6 @@
 # ZapShift - Online Parcel Delivery Service
 
-![ZapShift - Homepage Hero Section](https://i.ibb.co.com/TMFsb1xv/Screenshot-35.png)
+![ZapShift - Homepage Hero Section]https://i.ibb.co.com/wNkNBnzf/Screenshot-3.png)
 
 **Fastest Delivery & Easy Pickup** — A full-stack parcel delivery platform.
 
